@@ -1975,6 +1975,8 @@ var AP_PREVIEW={
 var AP_TIMER=null;
 
 /* ─────────── API CLIENT ─────────── */
+// Frontend-only demo mode (default ON): set localStorage.wc26_frontend_only='0' to re-enable backend API.
+var FRONTEND_ONLY_DEMO=(localStorage.getItem('wc26_frontend_only')||'1')!=='0';
 var API_BASE=(localStorage.getItem('wc26_api_base')||'http://localhost:8787').replace(/\/+$/,'');
 var API_SESSION_KEY='wc26_api_session_id_v1';
 var API_SESSION_ID=localStorage.getItem(API_SESSION_KEY)||('wc26_web_'+Math.random().toString(36).slice(2,10));
@@ -1984,6 +1986,11 @@ function apiUrl(path){
   return API_BASE+path;
 }
 async function apiRequest(method,path,payload){
+  if(FRONTEND_ONLY_DEMO){
+    var demoErr=new Error('frontend_only_demo');
+    demoErr.payload={ok:false,error:'frontend_only_demo'};
+    throw demoErr;
+  }
   var opt={method:method,headers:{'content-type':'application/json'}};
   if(payload&&method!=='GET') opt.body=JSON.stringify(payload);
   var res=await fetch(apiUrl(path),opt);
@@ -4465,7 +4472,9 @@ async function penStartMatch(mode,chosenOpp){
       },
       entryFeeApplied:P.soloEntryFeeNow?(-P.soloEntryFeeNow):0
     };
-    showToast('⚠️ Backend unavailable. Running local match mode.');
+    if(!FRONTEND_ONLY_DEMO){
+      showToast('⚠️ Backend unavailable. Running local match mode.');
+    }
   }
 
   if(startFromApi){
