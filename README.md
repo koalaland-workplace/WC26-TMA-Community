@@ -1,1 +1,0 @@
-# WC26-WC26-Nation-Journey-Airdrop
